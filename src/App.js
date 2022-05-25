@@ -28,6 +28,16 @@ import {
 import PasswordReset from './UI/PasswordReset'
 import SessionProvider from './UI/SessionProvider'
 
+import { connect } from 'react-redux'
+import {
+  setLoggedIn,
+  setLoggedInUserId,
+  setLoggedInUsername,
+  setLoggedInRoles,
+  setLoggedInUserState,
+  logoutUser
+} from './redux/loginReducer'
+
 import './App.css'
 
 const Frame = styled.div`
@@ -40,7 +50,7 @@ const Main = styled.main`
   padding: 30px;
 `
 
-function App() {
+function App(props) {
   const defaultTheme = {
     primary_color: '#386992',
     secondary_color: '#4E556F',
@@ -55,6 +65,9 @@ function App() {
     background_primary: '#fff',
     background_secondary: '#f5f5f5',
   }
+
+  const { loggedIn, loggedInUsername } = props.login
+  const { setLoggedIn, setLoggedInUsername } = props
 
   const cookies = new Cookies()
 
@@ -106,9 +119,9 @@ function App() {
   const [session, setSession] = useState('')
   const [loggedInUserId, setLoggedInUserId] = useState('')
   const [loggedInUserState, setLoggedInUserState] = useState(null)
-  const [loggedInUsername, setLoggedInUsername] = useState('')
+  // const [loggedInUsername, setLoggedInUsername] = useState('')
   const [loggedInRoles, setLoggedInRoles] = useState([])
-  const [loggedIn, setLoggedIn] = useState(false)
+  // const [loggedIn, setLoggedIn] = useState(false)
   const [sessionTimer, setSessionTimer] = useState(60)
 
   const [QRCodeURL, setQRCodeURL] = useState('')
@@ -679,7 +692,7 @@ function App() {
                       oldCredential !== null &&
                       newCredential !== null &&
                       oldCredential.credential_exchange_id ===
-                        newCredential.credential_exchange_id
+                      newCredential.credential_exchange_id
                     ) {
                       // (mikekebert) If you find a match, delete the old copy from the old array
                       oldCredentials.splice(index, 1)
@@ -751,7 +764,7 @@ function App() {
                       oldPresentation !== null &&
                       newPresentation !== null &&
                       oldPresentation.presentation_exchange_id ===
-                        newPresentation.presentation_exchange_id
+                      newPresentation.presentation_exchange_id
                     ) {
                       // (mikekebert) If you find a match, delete the old copy from the old array
                       // console.log('splice', oldPresentation)
@@ -1221,4 +1234,13 @@ function App() {
   }
 }
 
-export default App
+const mapStateToProps = (state) => state
+
+export default connect(mapStateToProps, {
+  setLoggedIn,
+  setLoggedInUserId,
+  setLoggedInUsername,
+  setLoggedInRoles,
+  setLoggedInUserState,
+  logoutUser
+})(App)
