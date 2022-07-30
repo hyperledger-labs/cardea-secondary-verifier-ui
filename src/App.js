@@ -125,7 +125,6 @@ function App() {
       let url = new URL('/api/anon/ws', window.location.href)
       url.protocol = url.protocol.replace('http', 'ws')
       controllerAnonSocket.current = new WebSocket(url.href)
-
       controllerAnonSocket.current.onopen = (event) => {
         setAnonWebsocket(true)
       }
@@ -154,7 +153,7 @@ function App() {
         )
       }
     }
-  }, [])
+  }, [readyForAnonMessages])
 
   // TODO: Setting logged-in user and session states on app mount
   useEffect(() => {
@@ -207,6 +206,49 @@ function App() {
 
       // Receive new message from Controller Server
       controllerAdminSocket.current.onmessage = (message) => {
+        const parsedMessage = JSON.parse(message.data)
+
+        messageHandler(
+          parsedMessage.context,
+          parsedMessage.type,
+          parsedMessage.data
+        )
+      }
+    } else {
+      controllerAnonSocket.current.onopen = () => {
+        // Resetting state to false to allow spinner while waiting for messages
+        // Comment the following line back in when we fix the timing bug
+        //setAppIsLoaded(false) // This doesn't work as expected. See function removeLoadingProcess
+
+        console.log('Ready to send messages')
+
+        // sendAnonMessage('SETTINGS', 'GET_THEME', {})
+        // addLoadingProcess('THEME')
+        sendAnonMessage('SETTINGS', 'GET_SCHEMAS', {})
+        addLoadingProcess('SCHEMAS')
+
+        sendAnonMessage('SETTINGS', 'GET_ORGANIZATION', {})
+        addLoadingProcess('ORGANIZATION')
+
+        sendAnonMessage('IMAGES', 'GET_ALL', {})
+        addLoadingProcess('LOGO')
+      }
+
+      controllerAnonSocket.current.onclose = (event) => {
+        // Auto Reopen websocket connection
+        // (JamesKEbert) TODO: Converse on sessions, session timeout and associated UI
+
+        setReadyForAnonMessages(false)
+        setAnonWebsocket(false)
+      }
+
+      // Error Handler
+      controllerAnonSocket.current.onerror = (event) => {
+        setNotification('Client Error - Websockets', 'error')
+      }
+
+      // Receive new message from Controller Server
+      controllerAnonSocket.current.onmessage = (message) => {
         const parsedMessage = JSON.parse(message.data)
 
         messageHandler(
@@ -441,8 +483,8 @@ function App() {
               break
 
             case 'INVITATIONS_ERROR':
-              console.log(data.error)
-              console.log('Invitations Error')
+              // console.log(data.error)
+              // console.log('Invitations Error')
               setErrorMessage(data.error)
 
               break
@@ -606,7 +648,6 @@ function App() {
             case 'USER_ERROR':
               // setErrorMessage(data.error)
               setErrorMessage(data.error)
-
               break
 
             case 'USER_SUCCESS':
@@ -664,7 +705,6 @@ function App() {
                 return updatedCredentials
               })
               removeLoadingProcess('CREDENTIALS')
-
               break
 
             case 'CREDENTIALS_ERROR':
@@ -714,7 +754,7 @@ function App() {
                         newPresentation.presentation_exchange_id
                     ) {
                       // (mikekebert) If you find a match, delete the old copy from the old array
-                      console.log('splice', oldPresentation)
+                      // console.log('splice', oldPresentation)
                       oldPresentations.splice(index, 1)
                     }
                   })
