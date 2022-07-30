@@ -9,9 +9,14 @@ import Contacts from '../UI/Contacts'
 import Credential from '../UI/Credential'
 import Credentials from '../UI/Credentials'
 import Home from '../UI/Home'
+import Presentation from '../UI/Presentation'
+import Presentations from '../UI/Presentations'
 import User from '../UI/User'
 import Users from '../UI/Users'
 import Settings from '../UI/Settings'
+
+import rules from '../UI/rbac-rules'
+import { check, CanUser } from '../UI/CanUser'
 
 const Frame = styled.div`
   display: flex;
@@ -30,6 +35,7 @@ function AdminRoutes(props) {
   const rules = props.rules
   const check = props.check
   const schemas = props.schemas
+  const privileges = props.privileges
 
   return (
     <>
@@ -53,7 +59,7 @@ function AdminRoutes(props) {
             return (
               <Frame id="app-frame">
                 <AppHeader
-                  loggedInUserState={props.loggedInUserState}
+                  loggedInUserState={loggedInUserState}
                   logo={props.image}
                   organizationName={props.organizationName}
                   loggedInUsername={props.loggedInUsername}
@@ -63,8 +69,12 @@ function AdminRoutes(props) {
                 />
                 <Main>
                   <Home
-                    loggedInUserState={props.loggedInUserState}
+                    loggedInUserState={loggedInUserState}
                     sendRequest={props.sendMessage}
+                    successMessage={props.successMessage}
+                    errorMessage={props.errorMessage}
+                    clearResponseState={props.clearResponseState}
+                    privileges={privileges}
                     QRCodeURL={props.QRCodeURL}
                   />
                 </Main>
@@ -79,7 +89,7 @@ function AdminRoutes(props) {
               return (
                 <Frame id="app-frame">
                   <AppHeader
-                    loggedInUserState={props.loggedInUserState}
+                    loggedInUserState={loggedInUserState}
                     loggedInUsername={props.loggedInUsername}
                     logo={props.image}
                     organizationName={props.organizationName}
@@ -105,7 +115,7 @@ function AdminRoutes(props) {
               return (
                 <Frame id="app-frame">
                   <AppHeader
-                    loggedInUserState={props.loggedInUserState}
+                    loggedInUserState={loggedInUserState}
                     loggedInUsername={props.loggedInUsername}
                     logo={props.image}
                     organizationName={props.organizationName}
@@ -115,7 +125,7 @@ function AdminRoutes(props) {
                   />
                   <Main>
                     <Contacts
-                      loggedInUserState={props.loggedInUserState}
+                      loggedInUserState={loggedInUserState}
                       history={history}
                       sendRequest={props.sendMessage}
                       contacts={props.contacts}
@@ -136,7 +146,7 @@ function AdminRoutes(props) {
               return (
                 <Frame id="app-frame">
                   <AppHeader
-                    loggedInUserState={props.loggedInUserState}
+                    loggedInUserState={loggedInUserState}
                     loggedInUsername={props.loggedInUsername}
                     logo={props.image}
                     organizationName={props.organizationName}
@@ -146,7 +156,7 @@ function AdminRoutes(props) {
                   />
                   <Main>
                     <Contact
-                      loggedInUserState={props.loggedInUserState}
+                      loggedInUserState={loggedInUserState}
                       history={history}
                       sendRequest={props.sendMessage}
                       contactId={match.params.contactId}
@@ -170,7 +180,7 @@ function AdminRoutes(props) {
               return (
                 <Frame id="app-frame">
                   <AppHeader
-                    loggedInUserState={props.loggedInUserState}
+                    loggedInUserState={loggedInUserState}
                     loggedInUsername={props.loggedInUsername}
                     logo={props.image}
                     organizationName={props.organizationName}
@@ -198,7 +208,7 @@ function AdminRoutes(props) {
               return (
                 <Frame id="app-frame">
                   <AppHeader
-                    loggedInUserState={props.loggedInUserState}
+                    loggedInUserState={loggedInUserState}
                     loggedInUsername={props.loggedInUsername}
                     logo={props.image}
                     organizationName={props.organizationName}
@@ -220,12 +230,65 @@ function AdminRoutes(props) {
           credentials={props.credentials}
         />
         <Route
+          path={`${path}/presentations`}
+          exact
+          render={({ match, history }) => {
+            return (
+              <Frame id="app-frame">
+                <AppHeader
+                  loggedInUserState={loggedInUserState}
+                  loggedInUsername={props.loggedInUsername}
+                  logo={props.image}
+                  organizationName={props.organizationName}
+                  match={match}
+                  history={history}
+                  handleLogout={props.handleLogout}
+                />
+                <Main>
+                  <Presentations
+                    history={history}
+                    presentationReports={props.presentationReports}
+                    contacts={props.contacts}
+                  />
+                </Main>
+              </Frame>
+            )
+          }}
+        />
+        <Route
+          path={`${path}/presentations/:presentationId`}
+          render={({ match, history }) => {
+            return (
+              <Frame id="app-frame">
+                <AppHeader
+                  loggedInUserState={loggedInUserState}
+                  loggedInUsername={props.loggedInUsername}
+                  logo={props.image}
+                  organizationName={props.organizationName}
+                  match={match}
+                  history={history}
+                  handleLogout={props.handleLogout}
+                />
+                <Main>
+                  <Presentation
+                    history={history}
+                    presentation={match.params.presentationId}
+                    presentationReports={props.presentationReports}
+                    contacts={props.contacts}
+                  />
+                </Main>
+              </Frame>
+            )
+          }}
+          presentationReports={props.presentationReports}
+        />
+        <Route
           path={`${path}/verification`}
           render={({ match, history }) => {
             return (
               <Frame id="app-frame">
                 <AppHeader
-                  loggedInUserState={props.loggedInUserState}
+                  loggedInUserState={loggedInUserState}
                   loggedInUsername={props.loggedInUsername}
                   logo={props.image}
                   organizationName={props.organizationName}
@@ -246,7 +309,7 @@ function AdminRoutes(props) {
             return (
               <Frame id="app-frame">
                 <AppHeader
-                  loggedInUserState={props.loggedInUserState}
+                  loggedInUserState={loggedInUserState}
                   loggedInUsername={props.loggedInUsername}
                   logo={props.image}
                   organizationName={props.organizationName}
@@ -268,7 +331,7 @@ function AdminRoutes(props) {
               return (
                 <Frame id="app-frame">
                   <AppHeader
-                    loggedInUserState={props.loggedInUserState}
+                    loggedInUserState={loggedInUserState}
                     loggedInUsername={props.loggedInUsername}
                     logo={props.image}
                     organizationName={props.organizationName}
@@ -278,7 +341,7 @@ function AdminRoutes(props) {
                   />
                   <Main>
                     <Users
-                      loggedInUserState={props.loggedInUserState}
+                      loggedInUserState={loggedInUserState}
                       roles={props.roles}
                       users={props.users}
                       user={props.user}
@@ -301,7 +364,7 @@ function AdminRoutes(props) {
             return (
               <Frame id="app-frame">
                 <AppHeader
-                  loggedInUserState={props.loggedInUserState}
+                  loggedInUserState={loggedInUserState}
                   loggedInUsername={props.loggedInUsername}
                   logo={props.image}
                   organizationName={props.organizationName}
@@ -325,7 +388,7 @@ function AdminRoutes(props) {
               return (
                 <Frame id="app-frame">
                   <AppHeader
-                    loggedInUserState={props.loggedInUserState}
+                    loggedInUserState={loggedInUserState}
                     loggedInUsername={props.loggedInUsername}
                     logo={props.image}
                     organizationName={props.organizationName}
@@ -346,6 +409,7 @@ function AdminRoutes(props) {
                       addStylesToArray={props.addStylesToArray}
                       removeStylesFromArray={props.removeStylesFromArray}
                       sendRequest={props.sendMessage}
+                      smtp={props.smtp}
                     />
                   </Main>
                 </Frame>

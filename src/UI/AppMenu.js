@@ -119,6 +119,19 @@ function AppMenu(props) {
           />
           <CanUser
             user={localUser}
+            perform="presentations:read"
+            yes={() => (
+              <Item
+                className={
+                  pathMatch === '/admin/presentations' ? 'active' : undefined
+                }
+              >
+                <StyledLink to="/admin/presentations">Presentations</StyledLink>
+              </Item>
+            )}
+          />
+          <CanUser
+            user={localUser}
             perform="users:read"
             yes={() => (
               <Item className={pathMatch === '/users' ? 'active' : undefined}>

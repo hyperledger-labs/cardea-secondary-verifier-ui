@@ -1,24 +1,26 @@
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 import styled from 'styled-components'
 
 import FormQR from './FormQR'
-// import { useNotification } from './NotificationProvider'
+import FormInvitationAccept from './FormInvitationAccept'
+import { useNotification } from './NotificationProvider'
 
 import { CanUser } from './CanUser'
 
-const HeaderHolder = styled.div`
+const DashboardRow = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: start;
+  flex-wrap: wrap;
 `
 
-const ContentFlexBox = styled.div`
-  width: 32%;
+const DashboardButton = styled.div`
+  width: 24%;
   min-width: 240px;
   height: 150px;
-  margin-bottom: 30px;
+  margin: 0px 1% 30px 0px;
   padding: 0 25px;
-  font-size: calc(12px + 1.5vw);
+  font-size: calc(12px + 1vw);
   line-height: 150px;
   vertical-align: center;
   text-transform: uppercase;
@@ -35,37 +37,129 @@ const ContentFlexBox = styled.div`
 `
 
 function Home(props) {
+  const error = props.errorMessage
+  const success = props.successMessage
+  const warning = props.warningMessage
   const localUser = props.loggedInUserState
+  const privileges = props.privileges
+
+  const [govGranted, setGovGranted] = useState(undefined)
+
+  const [index, setIndex] = useState(false)
+
+  const [oob, setOOB] = useState(false)
+
+  const [scanModalIsOpen, setScanModalIsOpen] = useState(false)
+  const [displayModalIsOpen, setDisplayModalIsOpen] = useState(false)
+
+  const closeScanModal = () => setScanModalIsOpen(false)
+  const closeDisplayModal = () => setDisplayModalIsOpen(false)
+
+  const isMounted = useRef(null)
 
   // Accessing notification context
-  // const setNotification = useNotification()
+  const setNotification = useNotification()
 
-  const [contactModalIsOpen, setContactModalIsOpen] = useState(false)
-  const [credentialModalIsOpen, setCredentialModalIsOpen] = useState(false)
+  useEffect(() => {
+    if (success) {
+      setNotification(success, 'notice')
+      props.clearResponseState()
+    } else if (error) {
+      setNotification(error, 'error')
+      props.clearResponseState()
+      setIndex(index + 1)
+    } else if (warning) {
+      setNotification(warning, 'warning')
+      props.clearResponseState()
+      setIndex(index + 1)
+    } else return
+  }, [error, success, warning])
 
-  const closeContactModal = () => setContactModalIsOpen(false)
-  const closeCredentialModal = () => setCredentialModalIsOpen(false)
+  // // Get governance privileges
+  // useEffect(() => {
+  //   isMounted.current = true
+  //   props.sendRequest('GOVERNANCE', 'GET_PRIVILEGES', {})
+  //   return () => {
+  //     isMounted.current = false
+  //   }
+  // }, [])
 
-  const addContact = () => {
-    setContactModalIsOpen((o) => !o)
-    props.sendRequest('INVITATIONS', 'CREATE_SINGLE_USE', {})
+  const scanInvite = (type) => {
+    type === 'oob' ? setOOB(true) : setOOB(false)
+
+    setScanModalIsOpen((o) => !o)
+  }
+
+  const presentOutOfBand = () => {
+    // Simple use of governance
+    if (privileges && privileges.includes('verify_trusted_traveler')) {
+      setDisplayModalIsOpen((o) => !o)
+      props.sendRequest('OUT_OF_BAND', 'CREATE_INVITATION', {})
+    } else {
+      setNotification("Error: you don't have the right privileges", 'error')
+    }
+  }
+
+  const presentInvitation = () => {
+    if (privileges && privileges.includes('verify_trusted_traveler')) {
+      setDisplayModalIsOpen((o) => !o)
+      props.sendRequest('INVITATIONS', 'CREATE_SINGLE_USE', {})
+    } else {
+      setNotification("Error: you don't have the right privileges", 'error')
+    }
   }
 
   return (
     <>
-      <HeaderHolder>
+      <DashboardRow>
         <CanUser
           user={localUser}
           perform="contacts:create"
           yes={() => (
-            <ContentFlexBox onClick={addContact}>Add Contact</ContentFlexBox>
+            <DashboardButton onClick={() => scanInvite('connection')}>
+              Accept Invitation
+            </DashboardButton>
           )}
         />
-      </HeaderHolder>
+        <CanUser
+          user={localUser}
+          perform="contacts:create"
+          yes={() => (
+            <DashboardButton onClick={presentInvitation}>
+              Display QR Code
+            </DashboardButton>
+          )}
+        />
+        <CanUser
+          user={localUser}
+          perform="contacts:create"
+          yes={() => (
+            <DashboardButton onClick={() => scanInvite('oob')}>
+              Accept OOB
+            </DashboardButton>
+          )}
+        />
+        <CanUser
+          user={localUser}
+          perform="contacts:create"
+          yes={() => (
+            <DashboardButton onClick={presentOutOfBand}>
+              Display OOB
+            </DashboardButton>
+          )}
+        />
+      </DashboardRow>
+      <FormInvitationAccept
+        oob={oob}
+        contactModalIsOpen={scanModalIsOpen}
+        closeContactModal={closeScanModal}
+        sendRequest={props.sendRequest}
+      />
       <FormQR
-        contactModalIsOpen={contactModalIsOpen}
-        closeContactModal={closeContactModal}
+        contactModalIsOpen={displayModalIsOpen}
+        closeContactModal={closeDisplayModal}
         QRCodeURL={props.QRCodeURL}
+        sendRequest={props.sendRequest}
       />
     </>
   )

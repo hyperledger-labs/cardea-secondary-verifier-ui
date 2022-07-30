@@ -16,11 +16,16 @@ function Root(props) {
   const [waitingForConnection, setWaitingForConnection] = useState(false)
   const [connected, setConnected] = useState(false)
 
-  //TODO there is a bug that causes us to issue two INVITATION requests
-  if (!waitingForInvitation) {
-    props.sendRequest('INVITATIONS', 'CREATE_SINGLE_USE', {})
-    setWaitingForInvitation(true)
-  }
+  useEffect(() => {
+    if (
+      !waitingForInvitation &&
+      props.anonWebsocket &&
+      props.readyForAnonMessages
+    ) {
+      props.sendRequest('INVITATIONS', 'CREATE_SINGLE_USE', {})
+      setWaitingForInvitation(true)
+    }
+  }, [props.anonWebsocket, props.readyForAnonMessages])
 
   useEffect(() => {
     if (props.QRCodeURL !== '') {
