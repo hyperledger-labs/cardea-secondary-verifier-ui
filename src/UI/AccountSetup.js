@@ -76,6 +76,7 @@ function AccountSetup(props) {
   const accSetupForm = useRef()
   const pass1 = useRef()
   const pass2 = useRef()
+  const username = useRef()
 
   const handleSubmit = (e) => {
     e.preventDefault()
@@ -85,6 +86,12 @@ function AccountSetup(props) {
     if (pass1.current.value != pass2.current.value) {
       console.log("Passwords don't match")
       setNotification('Passwords do not match. Please try again', 'error')
+    } else if (pass1.current.value === username.current.value) {
+      console.log('Password should not match username')
+      setNotification(
+        'Password should not match username. Please try again',
+        'error'
+      )
     } else {
       // Update the user, redirect to login and setup notification
       Axios({
@@ -126,7 +133,13 @@ function AccountSetup(props) {
         </InputBox>
         <InputBox>
           <Label htmlFor="Username">Username</Label>
-          <InputField type="Username" name="username" id="username" required />
+          <InputField
+            type="Username"
+            name="username"
+            id="username"
+            ref={username}
+            required
+          />
         </InputBox>
         <InputBox>
           <Label htmlFor="password">Password</Label>
