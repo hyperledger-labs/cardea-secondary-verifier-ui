@@ -406,6 +406,8 @@ function AdminRoutes(props) {
                       clearResponseState={props.clearResponseState}
                       imageResponse={props.image}
                       stylesArray={props.stylesArray}
+                      clearStylesArray={props.clearStylesArray}
+                      theme={props.theme}
                       addStylesToArray={props.addStylesToArray}
                       removeStylesFromArray={props.removeStylesFromArray}
                       sendRequest={props.sendMessage}
