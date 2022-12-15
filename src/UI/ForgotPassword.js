@@ -23,6 +23,14 @@ function ForgotPassword(props) {
   // Accessing notification context
   const setNotification = useNotification()
 
+  const submitBtn = useRef()
+
+  const onBtnClick = (e) => {
+    if (submitBtn.current) {
+      submitBtn.current.setAttribute('disabled', 'disabled')
+    }
+  }
+
   useEffect(() => {
     // Fetching the logo
     Axios({
@@ -41,6 +49,7 @@ function ForgotPassword(props) {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    onBtnClick()
     const form = new FormData(emailForm.current)
     const email = form.get('email')
 
@@ -84,7 +93,9 @@ function ForgotPassword(props) {
           <Label htmlFor="email">Email</Label>
           <InputField type="email" name="email" id="email" required />
         </InputBox>
-        <SubmitBtn type="submit">Reset</SubmitBtn>
+        <SubmitBtn type="submit" ref={submitBtn}>
+          Reset
+        </SubmitBtn>
       </Form>
     </FormContainer>
   )
